@@ -1,0 +1,11 @@
+{
+  "name": "rine",
+  "version": "1.0.0",
+  "description": "",
+  "main": "rine.js",
+  "scripts": {
+    "test": "tsc "
+  },
+  "author": "cc2a",
+  "license": "MIT"
+}
