@@ -1,4 +1,4 @@
-import { rine, Rine } from './rine'
+import { rine, Rine, RineType } from './rine'
 console.log(rine)
 
 interface Some<T> {
@@ -6,40 +6,32 @@ interface Some<T> {
     (a: 1): T
 }
 
-const obj = rine().prop({
-    some: {
-        get(ctx) {
-            return () => 'asd'
+export const obj = (() => {
+    const obj = rine({
+        props: {
+            empty: {
+                get(ctx) {
+                    return () => 'asd'
+                },
+                call(ctx) {
+                    return () => 123
+                }
+            }
         },
-        call(ctx) {
-            return () => 123
-        }
-    },
-    asd: {
-        get(ctx) {
-            return () => false
-        }
-    }
-})
-    .prop({
-        
+        opers: {
+            some: {
+                call(ctx) {
+                    return () => false
+                }
+            }
+        },
+        onConstruction(a: 1) {
+
+        },
     })
+    return obj as Some<RineType<typeof obj>>
+})()
 
-    .val()
-
-// const obj = rine({
-//     props: {
-//         empty: {
-//             get() {
-//                 return () => 1
-//             }
-//         }
-//     },
-//     onConstruction: function (a: 1) {
-
-//     } as Some<Rine>
-// })
-
-// let o = new obj(1)
-// console.log(o instanceof Rine)
-// debugger
+let o = new obj(1)
+console.log(o instanceof Rine)
+debugger
