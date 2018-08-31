@@ -8,6 +8,9 @@ const obj = rine_1.rine({
             get(ctx) {
             }
         }
-    }
+    },
+    onConstruction: (function (a) {
+    })
 });
+new obj(1);
 //# sourceMappingURL=test.js.map

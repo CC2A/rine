@@ -1,4 +1,5 @@
-export { KeyNotCrossEachOther, KeyNotCrossEach3, KeyCrossedError } from './KeyNotCrossEachOther';
+export * from './types';
+import { IfExtract, KeyNotCrossEach3 } from './types';
 export interface RineAttribute<S> {
     [key: string]: {
         call?(ctx: any): any;
@@ -25,9 +26,16 @@ export interface RineOperate<S> {
         call?(ctx: any): any;
     };
 }
-export interface RineDefine<A extends RineAttribute<A>, P extends RineProperty<P>, O extends RineOperate<O>> {
+export interface RineDefine<A extends RineAttribute<A>, P extends RineProperty<P>, O extends RineOperate<O>, R extends Rine, F> {
     attr?: A;
     props?: P;
     opers?: O;
+    onConstruction?: F;
 }
-export declare function rine<A extends RineAttribute<A>, P extends RineProperty<P>, O extends RineOperate<O>>(defs: RineDefine<A, P, O>): null;
+export interface Rine {
+}
+export interface RineConstructor<T extends Rine> {
+    new (): T;
+    (): T;
+}
+export declare function rine<A extends RineAttribute<A>, P extends RineProperty<P>, O extends RineOperate<O>, R extends Rine, F>(defs: RineDefine<A, P, O, R, F>): IfExtract<KeyNotCrossEach3<F, never, A, P, O>, never, RineConstructor<R>, F>;
