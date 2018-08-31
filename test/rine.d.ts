@@ -1,41 +1,28 @@
 export * from './types';
-import { IfExtract, KeyNotCrossEach3 } from './types';
-export interface RineAttribute<S> {
+export interface RineAttribute<R> {
+    call?(): any;
+}
+export interface RineProperty<R> {
     [key: string]: {
-        call?(ctx: any): any;
-    };
-    [key: number]: {
-        call?(ctx: any): any;
+        get?(ctx: any): () => R;
+        call?(): any;
     };
 }
-export interface RineProperty<S> {
-    [key: string]: {
-        get?(ctx: any): any;
-        call?(ctx: any): any;
-    };
-    [key: number]: {
-        get?(ctx: any): any;
-        call?(ctx: any): any;
-    };
-}
-export interface RineOperate<S> {
-    [key: string]: {
-        call?(ctx: any): any;
-    };
-    [key: number]: {
-        call?(ctx: any): any;
-    };
-}
-export interface RineDefine<A extends RineAttribute<A>, P extends RineProperty<P>, O extends RineOperate<O>, R extends Rine, F> {
-    attr?: A;
-    props?: P;
-    opers?: O;
-    onConstruction?: F;
+export interface RineOperate<R> {
+    call?(): any;
 }
 export interface Rine {
+}
+export declare class Rine {
 }
 export interface RineConstructor<T extends Rine> {
     new (): T;
     (): T;
 }
-export declare function rine<A extends RineAttribute<A>, P extends RineProperty<P>, O extends RineOperate<O>, R extends Rine, F>(defs: RineDefine<A, P, O, R, F>): IfExtract<KeyNotCrossEach3<F, never, A, P, O>, never, RineConstructor<R>, F>;
+export declare function rine(): RineDefiner<Rine>;
+declare class RineDefiner<OUT extends Rine> {
+    prop<R, D extends RineProperty<R>, O extends {
+        [K in keyof D]: D[K]['get'];
+    }>(def: D): RineDefiner<O>;
+    val(): OUT;
+}

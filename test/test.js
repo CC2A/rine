@@ -2,15 +2,27 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const rine_1 = require("./rine");
 console.log(rine_1.rine);
-const obj = rine_1.rine({
-    props: {
-        empty: {
-            get(ctx) {
-            }
+const obj = rine_1.rine().prop({
+    some: {
+        get(ctx) {
+            return () => 'asd';
         }
-    },
-    onConstruction: (function (a) {
-    })
+    }
+}).val();
+function some1(a) {
+    return null;
+}
+function some2(a) {
+    return null;
+}
+let out1 = some1({
+    a() {
+        return 'asd';
+    }
 });
-new obj(1);
+let out2 = some2({
+    a() {
+        return 'asd';
+    }
+});
 //# sourceMappingURL=test.js.map

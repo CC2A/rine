@@ -6,17 +6,35 @@ interface Some<T> {
     (a: 1): T
 }
 
-const obj = rine({
-    props: {
-        empty: {
-            get(ctx) {
-
-            }
+const obj = rine().prop({
+    some: {
+        get(ctx) {
+            return () => 'asd'
+        },
+        call(ctx) {
+            return () => 123
         }
     },
-    onConstruction: (function (a: 1) {
+    asd: {
+        get(ctx) {
+            return () => false
+        }
+    }
+}).val()
 
-    }) as Some<Rine>
-})
+// const obj = rine({
+//     props: {
+//         empty: {
+//             get() {
+//                 return () => 1
+//             }
+//         }
+//     },
+//     onConstruction: function (a: 1) {
 
-new obj(1)
+//     } as Some<Rine>
+// })
+
+// let o = new obj(1)
+// console.log(o instanceof Rine)
+// debugger
