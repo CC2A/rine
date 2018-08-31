@@ -1,17 +1,17 @@
 export * from './types'
-import { IfExtract, KeyNotCrossEach3, KeyCrossedError } from './types'
+import { IfExtract, KeyNotCrossEachOther, KeyNotCrossEach3, KeyCrossedError } from './types'
 
 export interface RineAttribute<R> {
     call?();
 }
 
-export interface RineProperty<R> {
+export interface RineProperty {
     [key: string]: {
-        get(ctx): () => R;
+        get(ctx): Function;
         call?(ctx): Function;
     }
     [key: number]: {
-        get(ctx): () => R;
+        get(ctx): Function;
         call?(ctx): Function;
     }
 }
@@ -63,14 +63,14 @@ export function rine(): RineDefiner<Rine> {
     return new RineDefiner
 }
 
+type CrossKeyNotCrossEachOther<F, A, B> = KeyNotCrossEachOther<A & B, F, A, B>
 class RineDefiner<OUT extends Rine> {
-    prop<D extends RineProperty<any>>(def: D):
-        D extends RineProperty<infer R> ?
-        D[keyof D]['call'] extends (ctx) => infer CR ?
-        {} extends CR ? RineDefiner<OUT & { readonly [K in keyof D]: R }> :
-        RineDefiner<OUT & { readonly [K in keyof D]: R & CR }> :
-        RineDefiner<OUT & { readonly [K in keyof D]: R }> :
-        any {
+    prop<D extends RineProperty>(def: D): {} extends D ? this :
+        RineDefiner<CrossKeyNotCrossEachOther<never, OUT, { readonly [K in keyof D]:
+            D[K]['call'] extends (ctx) => infer R ?
+            {} extends R ? ReturnType<ReturnType<D[K]['get']>> :
+            ReturnType<ReturnType<D[K]['get']>> & ReturnType<D[K]['call']> : never
+        }>> {
         return this as any//todo
     }
     val(): OUT {

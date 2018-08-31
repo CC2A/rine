@@ -20,7 +20,12 @@ const obj = rine().prop({
             return () => false
         }
     }
-}).val()
+})
+    .prop({
+        
+    })
+
+    .val()
 
 // const obj = rine({
 //     props: {
