@@ -1,9 +1,4 @@
-interface Some<T> {
-    new (a: 1): T;
-    (a: 1): T;
-}
-export declare const obj: Some<{
+export declare const obj: import("./rine").RineConstructor<{
     readonly some: () => false;
     readonly empty: "asd" & (() => 123);
-}>;
-export {};
+}, [1]>;

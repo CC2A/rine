@@ -1,18 +1,15 @@
 export * from './types'
-import { IfExtract, KeyNotCrossEachOther, WithoutKey, IntersectionUniqueKey, KeyNotCrossEach3, KeyCrossedError } from './types'
+import { ParameterTransfer, WithoutKey, IntersectionUniqueKey, KeyNotCrossEach3, KeyCrossedError } from './types'
 
 export interface Rine { }
 export class Rine { }
 
-export interface RineConstructor<T extends Rine> {
-    new(): T
-    (): T
+export interface RineConstructor<T extends Rine, P extends unknown[]> {
+    new(...args: P): T
+    (...args: P): T
 }
-/** Obtain the `Rine` type of `RineConstructor<Rine>`  
- *   
- * *The only reason this type exists is that typescript cannot transfer function arguments*
-*/
-export type RineType<C extends RineConstructor<any>> = C extends RineConstructor<infer R> ? R : any
+/** Obtain the `Rine` type of `RineConstructor<Rine>`  */
+export type RineType<C extends RineConstructor<any, any>> = C extends RineConstructor<infer R, any> ? R : any
 
 export interface RineAttribute {
     [key: string]: {
@@ -252,8 +249,9 @@ type Check_rine<
     A extends RineAttribute,
     P extends RineProperty,
     O extends RineOperate,
+    Arg extends unknown[]
     > =
-    RineConstructor<CheckRineProperty<P, CheckRineOperate<O, CheckRineAttribute<A, {}>>>>
+    RineConstructor<CheckRineProperty<P, CheckRineOperate<O, CheckRineAttribute<A, {}>>>, Arg>
 
 //#endregion
 /** Auto make chain obj, with type
@@ -265,7 +263,7 @@ export function rine<
     O extends RineOperate,
     F extends Function,
     >
-    (defs: RineDefine<A, P, O, F>): Check_rine<A, P, O> {
+    (defs: RineDefine<A, P, O, F>): Check_rine<A, P, O, ParameterTransfer<F>> {
     const { attr, props, opers, onConstruction } = defs
     keyCrossCheck(attr, props, opers)
 
