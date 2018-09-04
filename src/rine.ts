@@ -4,7 +4,7 @@ import { ParameterTransfer, WithoutKey, IntersectionUniqueKey, KeyNotCrossEach3,
 export interface Rine { }
 export class Rine { }
 
-export interface RineConstructor<T extends Rine, P extends unknown[]> {
+export interface RineConstructor<T extends Rine, P extends any[]> {
     new(...args: P): T
     (...args: P): T
 }
@@ -249,9 +249,9 @@ type Check_rine<
     A extends RineAttribute,
     P extends RineProperty,
     O extends RineOperate,
-    Arg extends unknown[]
+    F extends Function,
     > =
-    RineConstructor<CheckRineProperty<P, CheckRineOperate<O, CheckRineAttribute<A, {}>>>, Arg>
+    RineConstructor<CheckRineProperty<P, CheckRineOperate<O, CheckRineAttribute<A, {}>>>, ParameterTransfer<F>>
 
 //#endregion
 /** Auto make chain obj, with type
@@ -263,7 +263,7 @@ export function rine<
     O extends RineOperate,
     F extends Function,
     >
-    (defs: RineDefine<A, P, O, F>): Check_rine<A, P, O, ParameterTransfer<F>> {
+    (defs: RineDefine<A, P, O, F>): Check_rine<A, P, O, F> {
     const { attr, props, opers, onConstruction } = defs
     keyCrossCheck(attr, props, opers)
 
