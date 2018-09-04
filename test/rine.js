@@ -25,7 +25,7 @@ class RineFnProperty extends RineFn {
         super();
         this.ctx = new PropertyContext;
         const ctx = new Proxy({}, {
-        //todo
+            get: (targer, property) => this.ctx[property]
         });
         if (typeof get == 'function') {
             const $get = get.call(ctx, ctx);
@@ -36,7 +36,72 @@ class RineFnProperty extends RineFn {
             this.setCall($call);
         }
     }
-    $exec() {
+    exec() {
+        let val, evalval = false;
+        const checkEval = () => {
+            if (!evalval) {
+                val = this.$get();
+                if (typeof val != 'object') {
+                    val = Object.assign(val);
+                }
+                evalval = true;
+            }
+        };
+        let handler = {
+            has: (target, property) => {
+                checkEval();
+                return Reflect.has(val, property);
+            },
+            get: (target, property) => {
+                checkEval();
+                return Reflect.get(val, property);
+            },
+            getPrototypeOf: () => {
+                checkEval();
+                return Reflect.getPrototypeOf(val);
+            },
+            setPrototypeOf: (targer, proto) => {
+                checkEval();
+                return Reflect.setPrototypeOf(val, proto);
+            },
+            isExtensible: () => {
+                checkEval();
+                return Reflect.isExtensible(val);
+            },
+            preventExtensions: () => {
+                checkEval();
+                return Reflect.preventExtensions(val);
+            },
+            getOwnPropertyDescriptor: (targer, property) => {
+                checkEval();
+                return Reflect.getOwnPropertyDescriptor(val, property);
+            },
+            defineProperty: (target, property, descriptor) => {
+                checkEval();
+                return Reflect.defineProperty(val, property, descriptor);
+            },
+            ownKeys: () => {
+                checkEval();
+                return Reflect.ownKeys(val);
+            },
+            deleteProperty: (targer, property) => {
+                checkEval();
+                return Reflect.deleteProperty(val, property);
+            }
+        };
+        if (this.$call == null) {
+            handler = Object.assign(handler, {
+                apply: (target, thisArg, argumentsList) => {
+                }
+            });
+        }
+        else {
+            handler = Object.assign(handler, {
+                apply: (target, thisArg, argumentsList) => {
+                }
+            });
+        }
+        return new Proxy({}, handler);
     }
 }
 function makeProxy(self, attr, props, opers) {
@@ -62,6 +127,7 @@ function makeProxy(self, attr, props, opers) {
             if (fns.has(property)) {
                 const fn = fns.get(property);
                 if (fn instanceof RineFnProperty) {
+                    return fn.exec();
                 }
             }
         },

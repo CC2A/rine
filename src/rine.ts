@@ -97,22 +97,71 @@ class RineFnProperty extends RineFn {
     }
     exec() {
         let val, evalval = false;
-        let handler: ProxyHandler<{}> = {
-            get: (targer, p) => {
-                if (!evalval) {
-                    val = this.$get()
-                    evalval = true
+        const checkEval = () => {
+            if (!evalval) {
+                val = this.$get()
+                if (typeof val != 'object') {
+                    val = Object.assign(val)
                 }
+                evalval = true
             }
         }
-        if (this.$call != null) {
+        let handler: ProxyHandler<{}> = {
+            has: (target, property) => {
+                checkEval()
+                return Reflect.has(val, property)
+            },
+            get: (target, property) => {
+                checkEval()
+                return Reflect.get(val, property)
+            },
+            getPrototypeOf: () => {
+                checkEval()
+                return Reflect.getPrototypeOf(val)
+            },
+            setPrototypeOf: (targer, proto) => {
+                checkEval()
+                return Reflect.setPrototypeOf(val, proto)
+            },
+            isExtensible: () => {
+                checkEval()
+                return Reflect.isExtensible(val)
+            },
+            preventExtensions: () => {
+                checkEval()
+                return Reflect.preventExtensions(val)
+            },
+            getOwnPropertyDescriptor: (targer, property) => {
+                checkEval()
+                return Reflect.getOwnPropertyDescriptor(val, property)
+            },
+            defineProperty: (target, property, descriptor) => {
+                checkEval()
+                return Reflect.defineProperty(val, property, descriptor)
+            },
+            ownKeys: () => {
+                checkEval()
+                return Reflect.ownKeys(val)
+            },
+            deleteProperty: (targer, property) => {
+                checkEval()
+                return Reflect.deleteProperty(val, property)
+            }
+        }
+        if (this.$call == null) {
             handler = Object.assign(handler, {
+                apply: (target, thisArg, argumentsList) => {
 
+                }
+            })
+        } else {
+            handler = Object.assign(handler, {
+                apply: (target, thisArg, argumentsList) => {
+
+                }
             })
         }
-        return new Proxy({}, {
-
-        })
+        return new Proxy({}, handler)
     }
 }
 
