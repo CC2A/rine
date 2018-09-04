@@ -1,13 +1,8 @@
-type WithOutKey<A, B extends PropertyKey[]> = { [K in keyof A]: A[K] }
+type TheArrKeys<T extends PropertyKey[]> = { [K in (keyof T) extends void ? any : any]: T[K] }
+type GetStrKey<T extends any> = T[string]
+export type Keys<T extends PropertyKey[] | {}> = T extends Array<any> ? GetStrKey<TheArrKeys<T>> : keyof T
+type TheWithOutKey<A, T extends any> = A extends never ? never : { [K in T extends PropertyKey ? T : T]: A[K] }
+export type WithOutKey<A, B extends PropertyKey[]> = TheWithOutKey<A, Exclude<Keys<A>, Keys<B>>>
+
 
 let x: WithOutKey<{ a: 1, b: 2 }, ['b']>
-
-type a = typeof x
-
-type TheArrKeys<T extends PropertyKey[]> = { [K in (keyof T) extends number ? K : any]: T[K] }
-type GetStrKey<T extends any> = T[string]
-export type Keys<T extends PropertyKey[]> = GetStrKey<TheArrKeys<T>>
-
-declare let xasd: Keys<['a', 'b']>
-
-type k = typeof xasd
