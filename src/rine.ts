@@ -1,6 +1,19 @@
 export * from './types'
 import { IfExtract, KeyNotCrossEachOther, KeyNotCrossEach3, KeyCrossedError } from './types'
 
+export interface Rine { }
+export class Rine { }
+
+export interface RineConstructor<T extends Rine> {
+    new(): T
+    (): T
+}
+/** Obtain the `Rine` type of `RineConstructor<Rine>`  
+ *   
+ * *The only reason this type exists is that typescript cannot transfer function arguments*
+*/
+export type RineType<C extends RineConstructor<any>> = C extends RineConstructor<infer R> ? R : any
+
 export interface RineAttribute {
     [key: string]: {
         call(ctx): Function;
@@ -12,12 +25,12 @@ export interface RineAttribute {
 
 export interface RineProperty {
     [key: string]: {
-        get(ctx): Function;
-        call?(ctx): Function;
+        get(this: RinePropertyContext, ctx?: RinePropertyContext): Function;
+        call?(this: RinePropertyContext, ctx?: RinePropertyContext): Function;
     }
     [key: number]: {
-        get(ctx): Function;
-        call?(ctx): Function;
+        get(this: RinePropertyContext, ctx?: RinePropertyContext): Function;
+        call?(this: RinePropertyContext, ctx?: RinePropertyContext): Function;
     }
 }
 
@@ -42,20 +55,154 @@ export interface RineDefine<
     onConstruction?: F,
 }
 
-export interface Rine {
+export interface RinePropertyContext {
 
 }
-export class Rine {
+class PropertyContext implements RinePropertyContext {
 
 }
 
-export interface RineConstructor<T extends Rine> {
-    new(): T
-    (): T
+interface RineFn { }
+abstract class RineFn {
+    abstract exec(): object;
 }
 
-export type RineType<C extends RineConstructor<any>> = C extends RineConstructor<infer R> ? R : any
+class RineFnProperty extends RineFn {
+    $get: () => any
+    $call: () => any
+    ctx: RinePropertyContext
+    ctx_proxy: object
+    setGet($get) {
+        if (typeof $get == 'function')
+            this.$get = $get
+    }
+    setCall($call) {
+        if (typeof $call == 'function')
+            this.$call = $call
+    }
+    constructor(get: (ctx: RinePropertyContext) => Function, call: (ctx: RinePropertyContext) => Function) {
+        super()
+        this.ctx = new PropertyContext
+        const ctx = new Proxy({}, {
+            get: (targer, property) => this.ctx[property]
+        })
+        if (typeof get == 'function') {
+            const $get = get.call(ctx, ctx)
+            this.setGet($get)
+        }
+        if (typeof call == 'function') {
+            const $call = call.call(ctx, ctx)
+            this.setCall($call)
+        }
+    }
+    exec() {
+        let val, evalval = false;
+        const checkEval = () => {
+            if (!evalval) {
+                val = this.$get()
+                if (typeof val != 'object') {
+                    val = Object.assign(val)
+                }
+                evalval = true
+            }
+        }
+        let handler: ProxyHandler<{}> = {
+            has: (target, property) => {
+                checkEval()
+                return Reflect.has(val, property)
+            },
+            get: (target, property) => {
+                checkEval()
+                return Reflect.get(val, property)
+            },
+            getPrototypeOf: () => {
+                checkEval()
+                return Reflect.getPrototypeOf(val)
+            },
+            setPrototypeOf: (targer, proto) => {
+                checkEval()
+                return Reflect.setPrototypeOf(val, proto)
+            },
+            isExtensible: () => {
+                checkEval()
+                return Reflect.isExtensible(val)
+            },
+            preventExtensions: () => {
+                checkEval()
+                return Reflect.preventExtensions(val)
+            },
+            getOwnPropertyDescriptor: (targer, property) => {
+                checkEval()
+                return Reflect.getOwnPropertyDescriptor(val, property)
+            },
+            defineProperty: (target, property, descriptor) => {
+                checkEval()
+                return Reflect.defineProperty(val, property, descriptor)
+            },
+            ownKeys: () => {
+                checkEval()
+                return Reflect.ownKeys(val)
+            },
+            deleteProperty: (targer, property) => {
+                checkEval()
+                return Reflect.deleteProperty(val, property)
+            }
+        }
+        if (this.$call == null) {
+            handler = Object.assign(handler, {
+                apply: (target, thisArg, argumentsList) => {
 
+                }
+            })
+        } else {
+            handler = Object.assign(handler, {
+                apply: (target, thisArg, argumentsList) => {
+
+                }
+            })
+        }
+        return new Proxy({}, handler)
+    }
+}
+
+function makeProxy<T extends object,
+    A extends RineAttribute,
+    P extends RineProperty,
+    O extends RineOperate,>
+    (self: T, attr: A, props: P, opers: O): T {
+    const fns = new Map<any, RineFn>()
+    if (props != null) {
+        for (const k in props) {
+            const v = props[k]
+            if (typeof v == null) continue
+            const { get, call } = v
+            if (typeof get != 'function' && typeof call != 'function') continue
+            fns.set(k, new RineFnProperty(get, call))
+        }
+    }
+    return new Proxy(self, {
+        apply(target, thisArg, argumentsList) {
+        },
+        construct(target, thisArg, argumentsList) {
+            return null//todo
+        },
+        get(target, property, receiver) {
+            if (fns.has(property)) {
+                const fn = fns.get(property)
+                if (fn instanceof RineFnProperty) {
+                    return fn.exec()
+                }
+            }
+        },
+
+    })
+}
+//#region function rine
+/** If the key of `a` `b` `c` has a cross, throw `KeyCrossedError`
+ * @param a any obj
+ * @param b also any obj
+ * @param c still any obj
+ */
 function keyCrossCheck<A, B, C>(a: A, b: B, c: C): KeyNotCrossEach3<void, never, A, B, C> {
     const names = new Map()
     function check(v) {
@@ -69,13 +216,13 @@ function keyCrossCheck<A, B, C>(a: A, b: B, c: C): KeyNotCrossEach3<void, never,
     check(c)
     return
 }
-
+//#region rine typecheck
 type CheckRineProperty<P extends RineProperty, R> =
     {} extends P ?
     R :
     R & {
         readonly [K in keyof P]:
-        P[K]['call'] extends (ctx) => infer R ?
+        P[K]['call'] extends (ctx: RineFnProperty) => infer R ?
         {} extends R ?
         ReturnType<ReturnType<P[K]['get']>> :
         ReturnType<ReturnType<P[K]['get']>> & ReturnType<P[K]['call']> :
@@ -89,7 +236,7 @@ type CheckRineOperate<O extends RineOperate, R> =
         readonly [K in keyof O]:
         ReturnType<O[K]['call']>
     }
-    
+
 type CheckRineAttribute<A extends RineAttribute, R> =
     {} extends A ?
     R :
@@ -105,6 +252,10 @@ type Check_rine<
     > =
     RineConstructor<CheckRineProperty<P, CheckRineOperate<O, CheckRineAttribute<A, {}>>> & Rine>
 
+//#endregion
+/** Auto make chain obj, with type
+ * @param defs definition of chain object
+ */
 export function rine<
     A extends RineAttribute,
     P extends RineProperty,
@@ -138,21 +289,4 @@ export function rine<
         })
     } as any
 }
-
-function makeProxy<T extends object,
-    A extends RineAttribute,
-    P extends RineProperty,
-    O extends RineOperate,>
-    (self: T, attr: A, props: P, opers: O): T {
-    if (props != null) {
-        for (let k in props) {
-            let v = props[k]
-            if (typeof v == null) continue
-
-            type t = typeof v.get
-        }
-    }
-    return new Proxy(self, {
-
-    })
-}
+//#endregion
