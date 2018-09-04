@@ -7,4 +7,4 @@ export declare type KeyExpand<A> = {
 };
 export declare type Expand<A> = KeyExpand<A>[keyof KeyExpand<A>];
 export declare type KeyPack<E> = E extends infer O ? keyof O : any;
-export declare type Minus<A, B> = Pick<A, KeyPack<Exclude<Expand<A>, B>>>;
+export declare type Minus<A, B> = Pick<A, KeyPack<Exclude<Expand<A>, Expand<B>>>>;

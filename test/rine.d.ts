@@ -4,7 +4,7 @@ export interface Rine {
 }
 export declare class Rine {
 }
-export interface RineConstructor<T extends Rine, P extends unknown[]> {
+export interface RineConstructor<T extends Rine, P extends any[]> {
     new (...args: P): T;
     (...args: P): T;
 }
@@ -68,8 +68,8 @@ declare type CheckRineOperate<O extends RineOperate, R> = {} extends O ? R : Int
 declare type CheckRineAttribute<A extends RineAttribute, R> = {} extends A ? R : IntersectionUniqueKey<never, R, {
     readonly [K in keyof A]: ReturnType<A[K]['call']>;
 }>;
-declare type Check_rine<A extends RineAttribute, P extends RineProperty, O extends RineOperate, Arg extends unknown[]> = RineConstructor<CheckRineProperty<P, CheckRineOperate<O, CheckRineAttribute<A, {}>>>, Arg>;
+declare type Check_rine<A extends RineAttribute, P extends RineProperty, O extends RineOperate, F extends Function> = RineConstructor<CheckRineProperty<P, CheckRineOperate<O, CheckRineAttribute<A, {}>>>, ParameterTransfer<F>>;
 /** Auto make chain obj, with type
  * @param defs definition of chain object
  */
-export declare function rine<A extends RineAttribute, P extends RineProperty, O extends RineOperate, F extends Function>(defs: RineDefine<A, P, O, F>): Check_rine<A, P, O, ParameterTransfer<F>>;
+export declare function rine<A extends RineAttribute, P extends RineProperty, O extends RineOperate, F extends Function>(defs: RineDefine<A, P, O, F>): Check_rine<A, P, O, F>;
