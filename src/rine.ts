@@ -1,5 +1,5 @@
 export * from './types'
-import { IfExtract, KeyNotCrossEachOther, KeyNotCrossEach3, KeyCrossedError } from './types'
+import { IfExtract, KeyNotCrossEachOther, WithoutKey, IntersectionUniqueKey, KeyNotCrossEach3, KeyCrossedError } from './types'
 
 export interface Rine { }
 export class Rine { }
@@ -220,37 +220,40 @@ function keyCrossCheck<A, B, C>(a: A, b: B, c: C): KeyNotCrossEach3<void, never,
 type CheckRineProperty<P extends RineProperty, R> =
     {} extends P ?
     R :
-    R & {
+    IntersectionUniqueKey<never, R,
+    {
         readonly [K in keyof P]:
         P[K]['call'] extends (ctx: RineFnProperty) => infer R ?
         {} extends R ?
         ReturnType<ReturnType<P[K]['get']>> :
         ReturnType<ReturnType<P[K]['get']>> & ReturnType<P[K]['call']> :
         ReturnType<ReturnType<P[K]['get']>>
-    }
+    }>
 
 type CheckRineOperate<O extends RineOperate, R> =
     {} extends O ?
     R :
-    R & {
+    IntersectionUniqueKey<never, R,
+    {
         readonly [K in keyof O]:
         ReturnType<O[K]['call']>
-    }
+    }>
 
 type CheckRineAttribute<A extends RineAttribute, R> =
     {} extends A ?
     R :
-    R & {
+    IntersectionUniqueKey<never, R,
+    {
         readonly [K in keyof A]:
         ReturnType<A[K]['call']>
-    }
+    }>
 
 type Check_rine<
     A extends RineAttribute,
     P extends RineProperty,
     O extends RineOperate,
     > =
-    RineConstructor<CheckRineProperty<P, CheckRineOperate<O, CheckRineAttribute<A, {}>>> & Rine>
+    RineConstructor<CheckRineProperty<P, CheckRineOperate<O, CheckRineAttribute<A, {}>>>>
 
 //#endregion
 /** Auto make chain obj, with type
@@ -262,7 +265,7 @@ export function rine<
     O extends RineOperate,
     F extends Function,
     >
-    (defs: RineDefine<A, P, O, F>): KeyNotCrossEach3<Check_rine<A, P, O>, never, A, P, O> {
+    (defs: RineDefine<A, P, O, F>): Check_rine<A, P, O> {
     const { attr, props, opers, onConstruction } = defs
     keyCrossCheck(attr, props, opers)
 

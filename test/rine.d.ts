@@ -1,5 +1,5 @@
 export * from './types';
-import { KeyNotCrossEach3 } from './types';
+import { IntersectionUniqueKey } from './types';
 export interface Rine {
 }
 export declare class Rine {
@@ -62,17 +62,17 @@ declare class RineFnProperty extends RineFn {
     constructor(get: (ctx: RinePropertyContext) => Function, call: (ctx: RinePropertyContext) => Function);
     exec(): {};
 }
-declare type CheckRineProperty<P extends RineProperty, R> = {} extends P ? R : R & {
+declare type CheckRineProperty<P extends RineProperty, R> = {} extends P ? R : IntersectionUniqueKey<never, R, {
     readonly [K in keyof P]: P[K]['call'] extends (ctx: RineFnProperty) => infer R ? {} extends R ? ReturnType<ReturnType<P[K]['get']>> : ReturnType<ReturnType<P[K]['get']>> & ReturnType<P[K]['call']> : ReturnType<ReturnType<P[K]['get']>>;
-};
-declare type CheckRineOperate<O extends RineOperate, R> = {} extends O ? R : R & {
+}>;
+declare type CheckRineOperate<O extends RineOperate, R> = {} extends O ? R : IntersectionUniqueKey<never, R, {
     readonly [K in keyof O]: ReturnType<O[K]['call']>;
-};
-declare type CheckRineAttribute<A extends RineAttribute, R> = {} extends A ? R : R & {
+}>;
+declare type CheckRineAttribute<A extends RineAttribute, R> = {} extends A ? R : IntersectionUniqueKey<never, R, {
     readonly [K in keyof A]: ReturnType<A[K]['call']>;
-};
-declare type Check_rine<A extends RineAttribute, P extends RineProperty, O extends RineOperate> = RineConstructor<CheckRineProperty<P, CheckRineOperate<O, CheckRineAttribute<A, {}>>> & Rine>;
+}>;
+declare type Check_rine<A extends RineAttribute, P extends RineProperty, O extends RineOperate> = RineConstructor<CheckRineProperty<P, CheckRineOperate<O, CheckRineAttribute<A, {}>>>>;
 /** Auto make chain obj, with type
  * @param defs definition of chain object
  */
-export declare function rine<A extends RineAttribute, P extends RineProperty, O extends RineOperate, F extends Function>(defs: RineDefine<A, P, O, F>): KeyNotCrossEach3<Check_rine<A, P, O>, never, A, P, O>;
+export declare function rine<A extends RineAttribute, P extends RineProperty, O extends RineOperate, F extends Function>(defs: RineDefine<A, P, O, F>): Check_rine<A, P, O>;
