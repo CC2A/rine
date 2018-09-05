@@ -1,14 +1,38 @@
 export * from './types'
 import { ParameterTransfer, WithoutKey, IntersectionUniqueKey, KeyNotCrossEach3, KeyCrossedError } from './types'
-
-export interface Rine { }
-export class Rine { }
-
-export interface RineConstructor<T extends Rine, P extends any[]> {
-    new(...args: P): T
-    (...args: P): T
+export const TypeId = Symbol('TypeId')
+export const RineSymbol = Symbol('Rine')
+export interface Rine {
+    [RineSymbol]: this
 }
-/** Obtain the `Rine` type of `RineConstructor<Rine>`  */
+export class Rine {
+    [RineSymbol]: this
+    constructor() {
+        Object.defineProperties(this, {
+            [RineSymbol]: { value: this }
+        })
+    }
+    static [TypeId]: typeof RineSymbol
+}
+Object.defineProperties(Rine, {
+    [TypeId]: { value: RineSymbol }
+})
+export function RineMixin<B extends new (...args: any[]) => any>(Base: B) {
+    type $Rine = Rine
+    return class Rine extends Base implements $Rine {
+        [RineSymbol]: this
+        constructor(...args: any[]) {
+            super(...args)
+            Object.defineProperties(this, {
+                [RineSymbol]: { value: this }
+            })
+        }
+    }
+}
+
+export type RineConstructor<T extends Rine, F extends Function> = T extends Rine ?
+    (new (...args: ParameterTransfer<F>) => T) & ((...args: ParameterTransfer<F>) => T) : never
+/** Obtain the `Rine` type of `RineConstructor<Rine, any>`  */
 export type RineType<C extends RineConstructor<any, any>> = C extends RineConstructor<infer R, any> ? R : any
 
 export interface RineAttribute {
@@ -244,15 +268,6 @@ type CheckRineAttribute<A extends RineAttribute, R> =
         readonly [K in keyof A]:
         ReturnType<A[K]['call']>
     }>
-
-type Check_rine<
-    A extends RineAttribute,
-    P extends RineProperty,
-    O extends RineOperate,
-    F extends Function,
-    > =
-    RineConstructor<CheckRineProperty<P, CheckRineOperate<O, CheckRineAttribute<A, {}>>>, ParameterTransfer<F>>
-
 //#endregion
 /** Auto make chain obj, with type
  * @param defs definition of chain object
@@ -263,7 +278,7 @@ export function rine<
     O extends RineOperate,
     F extends Function,
     >
-    (defs: RineDefine<A, P, O, F>): Check_rine<A, P, O, F> {
+    (defs: RineDefine<A, P, O, F>): RineConstructor<CheckRineProperty<P, CheckRineOperate<O, CheckRineAttribute<A, {}>>> & Rine, F> {
     const { attr, props, opers, onConstruction } = defs
     keyCrossCheck(attr, props, opers)
 

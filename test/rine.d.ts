@@ -1,14 +1,23 @@
 export * from './types';
 import { ParameterTransfer, IntersectionUniqueKey } from './types';
+export declare const TypeId: unique symbol;
+export declare const RineSymbol: unique symbol;
 export interface Rine {
+    [RineSymbol]: this;
 }
 export declare class Rine {
+    [RineSymbol]: this;
+    constructor();
+    static [TypeId]: typeof RineSymbol;
 }
-export interface RineConstructor<T extends Rine, P extends any[]> {
-    new (...args: P): T;
-    (...args: P): T;
-}
-/** Obtain the `Rine` type of `RineConstructor<Rine>`  */
+export declare function RineMixin<B extends new (...args: any[]) => any>(Base: B): {
+    new (...args: any[]): {
+        [x: string]: any;
+        [RineSymbol]: any;
+    };
+} & B;
+export declare type RineConstructor<T extends Rine, F extends Function> = T extends Rine ? (new (...args: ParameterTransfer<F>) => T) & ((...args: ParameterTransfer<F>) => T) : never;
+/** Obtain the `Rine` type of `RineConstructor<Rine, any>`  */
 export declare type RineType<C extends RineConstructor<any, any>> = C extends RineConstructor<infer R, any> ? R : any;
 export interface RineAttribute {
     [key: string]: {
@@ -68,8 +77,7 @@ declare type CheckRineOperate<O extends RineOperate, R> = {} extends O ? R : Int
 declare type CheckRineAttribute<A extends RineAttribute, R> = {} extends A ? R : IntersectionUniqueKey<never, R, {
     readonly [K in keyof A]: ReturnType<A[K]['call']>;
 }>;
-declare type Check_rine<A extends RineAttribute, P extends RineProperty, O extends RineOperate, F extends Function> = RineConstructor<CheckRineProperty<P, CheckRineOperate<O, CheckRineAttribute<A, {}>>>, ParameterTransfer<F>>;
 /** Auto make chain obj, with type
  * @param defs definition of chain object
  */
-export declare function rine<A extends RineAttribute, P extends RineProperty, O extends RineOperate, F extends Function>(defs: RineDefine<A, P, O, F>): Check_rine<A, P, O, F>;
+export declare function rine<A extends RineAttribute, P extends RineProperty, O extends RineOperate, F extends Function>(defs: RineDefine<A, P, O, F>): RineConstructor<CheckRineProperty<P, CheckRineOperate<O, CheckRineAttribute<A, {}>>> & Rine, F>;

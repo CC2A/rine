@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const rine_1 = require("./rine");
 console.log(rine_1.rine);
-exports.obj = rine_1.rine({
+exports.Some = rine_1.rine({
     props: {
         empty: {
             get(ctx) {
@@ -23,7 +23,7 @@ exports.obj = rine_1.rine({
     onConstruction(a) {
     },
 });
-let o = new exports.obj(1);
+let o = new exports.Some(1);
 console.log(o instanceof rine_1.Rine);
 debugger;
 //# sourceMappingURL=test.js.map

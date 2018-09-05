@@ -5,9 +5,30 @@ function __export(m) {
 Object.defineProperty(exports, "__esModule", { value: true });
 __export(require("./types"));
 const types_1 = require("./types");
+exports.TypeId = Symbol('TypeId');
+exports.RineSymbol = Symbol('Rine');
 class Rine {
+    constructor() {
+        Object.defineProperties(this, {
+            [exports.RineSymbol]: { value: this }
+        });
+    }
 }
 exports.Rine = Rine;
+Object.defineProperties(Rine, {
+    [exports.TypeId]: { value: exports.RineSymbol }
+});
+function RineMixin(Base) {
+    return class Rine extends Base {
+        constructor(...args) {
+            super(...args);
+            Object.defineProperties(this, {
+                [exports.RineSymbol]: { value: this }
+            });
+        }
+    };
+}
+exports.RineMixin = RineMixin;
 class PropertyContext {
 }
 class RineFn {

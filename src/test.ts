@@ -1,7 +1,8 @@
-import { rine, Rine } from './rine'
+import { rine, Rine, WithoutKey } from './rine'
+import { Minus } from './Subtraction';
 console.log(rine)
 
-export const obj = rine({
+export const Some = rine({
     props: {
         empty: {
             get(ctx) {
@@ -24,6 +25,6 @@ export const obj = rine({
     },
 })
 
-let o = new obj(1)
+let o = new Some(1)
 console.log(o instanceof Rine)
 debugger
