@@ -56,7 +56,7 @@ export interface RinePropertyContext {
 interface RineFn {
 }
 declare abstract class RineFn {
-    abstract exec(): object;
+    exec(valfn: Function): any;
 }
 declare class RineFnProperty extends RineFn {
     $get: () => any;
@@ -66,7 +66,7 @@ declare class RineFnProperty extends RineFn {
     setGet($get: any): void;
     setCall($call: any): void;
     constructor(get: (ctx: RinePropertyContext) => Function, call: (ctx: RinePropertyContext) => Function);
-    exec(): {};
+    exec(): any;
 }
 declare type CheckRineProperty<P extends RineProperty, R> = {} extends P ? R : IntersectionUniqueKey<never, R, {
     readonly [K in keyof P]: P[K]['call'] extends (ctx: RineFnProperty) => infer R ? {} extends R ? ReturnType<ReturnType<P[K]['get']>> : ReturnType<ReturnType<P[K]['get']>> & ReturnType<P[K]['call']> : ReturnType<ReturnType<P[K]['get']>>;

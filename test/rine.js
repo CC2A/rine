@@ -31,44 +31,16 @@ function RineMixin(Base) {
 exports.RineMixin = RineMixin;
 class PropertyContext {
 }
-class RineFn {
+function asDefVal(value) {
+    //return { value }
+    // return function <T>(targer: T) {
+    //     return { value: targer }
+    // }
 }
-class RineFnProperty extends RineFn {
-    setGet($get) {
-        if (typeof $get == 'function')
-            this.$get = $get;
-    }
-    setCall($call) {
-        if (typeof $call == 'function')
-            this.$call = $call;
-    }
-    constructor(get, call) {
-        super();
-        this.ctx = new PropertyContext;
-        const ctx = new Proxy({}, {
-            get: (targer, property) => this.ctx[property]
-        });
-        if (typeof get == 'function') {
-            const $get = get.call(ctx, ctx);
-            this.setGet($get);
-        }
-        if (typeof call == 'function') {
-            const $call = call.call(ctx, ctx);
-            this.setCall($call);
-        }
-    }
-    exec() {
+class RineFn {
+    exec(valfn) {
         let val, evalval = false;
-        const checkEval = () => {
-            if (!evalval) {
-                val = this.$get();
-                if (typeof val != 'object') {
-                    val = Object.assign(val);
-                }
-                evalval = true;
-            }
-        };
-        let handler = {
+        const oncehandler = {
             has: (target, property) => {
                 checkEval();
                 return Reflect.has(val, property);
@@ -109,20 +81,69 @@ class RineFnProperty extends RineFn {
                 checkEval();
                 return Reflect.deleteProperty(val, property);
             }
+        }, handler = {
+            has: { value: (target, property) => Reflect.has(val, property) },
+            get: { value: (target, property) => Reflect.get(val, property) },
+            getPrototypeOf: { value: () => Reflect.getPrototypeOf(val) },
+            setPrototypeOf: { value: (targer, proto) => Reflect.setPrototypeOf(val, proto) },
+            isExtensible: { value: () => Reflect.isExtensible(val) },
+            preventExtensions: { value: () => Reflect.preventExtensions(val) },
+            getOwnPropertyDescriptor: { value: (targer, property) => Reflect.getOwnPropertyDescriptor(val, property) },
+            defineProperty: { value: (target, property, descriptor) => Reflect.defineProperty(val, property, descriptor) },
+            ownKeys: { value: () => Reflect.ownKeys(val) },
+            deleteProperty: { value: (targer, property) => Reflect.deleteProperty(val, property) }
         };
+        function checkEval() {
+            if (!evalval) {
+                val = valfn;
+                if (typeof val != 'object') {
+                    val = Object(val);
+                }
+                evalval = true;
+            }
+            Object.defineProperties(oncehandler, handler);
+        }
+        return new Proxy({}, oncehandler);
+    }
+}
+class RineFnProperty extends RineFn {
+    setGet($get) {
+        if (typeof $get == 'function')
+            this.$get = $get;
+    }
+    setCall($call) {
+        if (typeof $call == 'function')
+            this.$call = $call;
+    }
+    constructor(get, call) {
+        super();
+        this.ctx = new PropertyContext;
+        const ctx = new Proxy({}, {
+            get: (targer, property) => this.ctx[property]
+        });
+        if (typeof get == 'function') {
+            const $get = get.call(ctx, ctx);
+            this.setGet($get);
+        }
+        if (typeof call == 'function') {
+            const $call = call.call(ctx, ctx);
+            this.setCall($call);
+        }
+    }
+    exec() {
+        const baseproxy = super.exec(this.$get());
         if (this.$call == null) {
-            handler = Object.assign(handler, {
+            return new Proxy(baseproxy, {
                 apply: (target, thisArg, argumentsList) => {
                 }
             });
         }
         else {
-            handler = Object.assign(handler, {
+            return new Proxy(baseproxy, {
                 apply: (target, thisArg, argumentsList) => {
                 }
             });
         }
-        return new Proxy({}, handler);
     }
 }
 function makeProxy(self, attr, props, opers) {
