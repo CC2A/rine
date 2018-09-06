@@ -31,12 +31,6 @@ function RineMixin(Base) {
 exports.RineMixin = RineMixin;
 class PropertyContext {
 }
-function asDefVal(value) {
-    //return { value }
-    // return function <T>(targer: T) {
-    //     return { value: targer }
-    // }
-}
 class RineFn {
     exec(valfn) {
         let val, evalval = false;
@@ -65,10 +59,6 @@ class RineFn {
                 checkEval();
                 return Reflect.preventExtensions(val);
             },
-            getOwnPropertyDescriptor: (targer, property) => {
-                checkEval();
-                return Reflect.getOwnPropertyDescriptor(val, property);
-            },
             defineProperty: (target, property, descriptor) => {
                 checkEval();
                 return Reflect.defineProperty(val, property, descriptor);
@@ -80,6 +70,14 @@ class RineFn {
             deleteProperty: (targer, property) => {
                 checkEval();
                 return Reflect.deleteProperty(val, property);
+            },
+            apply: (target, thisArg, argumentsList) => {
+                checkEval();
+                return Reflect.apply(val, thisArg, argumentsList);
+            },
+            construct(target, argumentsList, newTarget) {
+                checkEval();
+                return Reflect.construct(val, argumentsList, newTarget);
             }
         }, handler = {
             has: { value: (target, property) => Reflect.has(val, property) },
@@ -88,22 +86,24 @@ class RineFn {
             setPrototypeOf: { value: (targer, proto) => Reflect.setPrototypeOf(val, proto) },
             isExtensible: { value: () => Reflect.isExtensible(val) },
             preventExtensions: { value: () => Reflect.preventExtensions(val) },
-            getOwnPropertyDescriptor: { value: (targer, property) => Reflect.getOwnPropertyDescriptor(val, property) },
             defineProperty: { value: (target, property, descriptor) => Reflect.defineProperty(val, property, descriptor) },
             ownKeys: { value: () => Reflect.ownKeys(val) },
-            deleteProperty: { value: (targer, property) => Reflect.deleteProperty(val, property) }
-        };
+            deleteProperty: { value: (targer, property) => Reflect.deleteProperty(val, property) },
+            apply: { value: (target, thisArg, argumentsList) => Reflect.apply(val, thisArg, argumentsList) },
+            construct: { value: (target, argumentsList, newTarget) => Reflect.construct(val, argumentsList, newTarget) }
+        }, emptyobj = () => { };
         function checkEval() {
             if (!evalval) {
-                val = valfn;
+                val = valfn();
                 if (typeof val != 'object') {
                     val = Object(val);
                 }
                 evalval = true;
+                emptyobj.__proto__.__proto__ = val;
             }
             Object.defineProperties(oncehandler, handler);
         }
-        return new Proxy({}, oncehandler);
+        return new Proxy(emptyobj, oncehandler);
     }
 }
 class RineFnProperty extends RineFn {
@@ -131,19 +131,15 @@ class RineFnProperty extends RineFn {
         }
     }
     exec() {
-        const baseproxy = super.exec(this.$get());
-        if (this.$call == null) {
+        const baseproxy = super.exec(this.$get);
+        if (this.$call != null) {
             return new Proxy(baseproxy, {
-                apply: (target, thisArg, argumentsList) => {
-                }
+                apply: (target, thisArg, argumentsList) => Reflect.apply(this.$call, thisArg, argumentsList),
+                construct: (target, argumentsList, newTarget) => Reflect.construct(this.$call, argumentsList, newTarget)
             });
         }
-        else {
-            return new Proxy(baseproxy, {
-                apply: (target, thisArg, argumentsList) => {
-                }
-            });
-        }
+        else
+            return baseproxy;
     }
 }
 function makeProxy(self, attr, props, opers) {

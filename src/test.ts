@@ -27,4 +27,10 @@ export const Some = rine({
 
 let o = new Some(1)
 console.log(o instanceof Rine)
+
+const e = o.empty
+console.log(e)
+
+const eo = e()
+console.log(eo)
 debugger

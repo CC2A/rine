@@ -112,10 +112,6 @@ abstract class RineFn {
                 checkEval()
                 return Reflect.preventExtensions(val)
             },
-            getOwnPropertyDescriptor: (targer, property) => {
-                checkEval()
-                return Reflect.getOwnPropertyDescriptor(val, property)
-            },
             defineProperty: (target, property, descriptor) => {
                 checkEval()
                 return Reflect.defineProperty(val, property, descriptor)
@@ -143,24 +139,25 @@ abstract class RineFn {
             setPrototypeOf: { value: (targer, proto) => Reflect.setPrototypeOf(val, proto) },
             isExtensible: { value: () => Reflect.isExtensible(val) },
             preventExtensions: { value: () => Reflect.preventExtensions(val) },
-            getOwnPropertyDescriptor: { value: (targer, property) => Reflect.getOwnPropertyDescriptor(val, property) },
             defineProperty: { value: (target, property, descriptor) => Reflect.defineProperty(val, property, descriptor) },
             ownKeys: { value: () => Reflect.ownKeys(val) },
             deleteProperty: { value: (targer, property) => Reflect.deleteProperty(val, property) },
             apply: { value: (target, thisArg, argumentsList) => Reflect.apply(val, thisArg, argumentsList) },
             construct: { value: (target, argumentsList, newTarget) => Reflect.construct(val, argumentsList, newTarget) }
-        }
+        }, emptyobj = () => { }
         function checkEval() {
             if (!evalval) {
-                val = valfn
+                val = valfn()
                 if (typeof val != 'object') {
                     val = Object(val)
                 }
-                evalval = true
+                evalval = true;
+
+                (emptyobj as any).__proto__.__proto__ = val
             }
             Object.defineProperties(oncehandler, handler)
         }
-        return new Proxy({}, oncehandler)
+        return new Proxy(emptyobj, oncehandler)
     }
 }
 
@@ -193,7 +190,7 @@ class RineFnProperty extends RineFn {
         }
     }
     exec() {
-        const baseproxy = super.exec(this.$get())
+        const baseproxy = super.exec(this.$get)
         if (this.$call != null) {
             return new Proxy(baseproxy, {
                 apply: (target, thisArg, argumentsList) => Reflect.apply(this.$call, thisArg, argumentsList),

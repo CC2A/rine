@@ -25,5 +25,9 @@ exports.Some = rine_1.rine({
 });
 let o = new exports.Some(1);
 console.log(o instanceof rine_1.Rine);
+const e = o.empty;
+console.log(e);
+const eo = e();
+console.log(eo);
 debugger;
 //# sourceMappingURL=test.js.map
