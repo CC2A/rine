@@ -1,15 +1,21 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const rine_1 = require("./rine");
-console.log(rine_1.rine);
-exports.Some = rine_1.rine({
+const _1 = require(".");
+console.log(_1.rine);
+const Defs = {
     props: {
         empty: {
             get(ctx) {
+                let self = ctx.self();
                 return () => 'asd';
             },
             call(ctx) {
                 return () => 123;
+            }
+        },
+        self: {
+            get(ctx) {
+                return null;
             }
         }
     },
@@ -22,9 +28,10 @@ exports.Some = rine_1.rine({
     },
     onConstruction(a) {
     },
-});
+};
+exports.Some = _1.rine(Defs);
 let o = new exports.Some(1);
-console.log(o instanceof rine_1.Rine);
+console.log(o instanceof _1.Rine);
 const e = o.empty;
 console.log(e);
 const eo = e();

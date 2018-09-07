@@ -1,15 +1,20 @@
-import { rine, Rine, WithoutKey } from './rine'
-import { Minus } from './Subtraction';
+import { rine, Rine, RineDefine, WithoutKey, RineType, RinePropertyContext } from '.'
 console.log(rine)
 
-export const Some = rine({
+const Defs = {
     props: {
         empty: {
-            get(ctx) {
+            get(ctx: RinePropertyContext) {
+                let self = ctx.self<typeof Some>()
                 return () => 'asd'
             },
             call(ctx) {
                 return () => 123
+            }
+        },
+        self: {
+            get(ctx){
+                return null
             }
         }
     },
@@ -23,7 +28,8 @@ export const Some = rine({
     onConstruction(a: 1) {
 
     },
-})
+}
+export const Some = rine(Defs)
 
 let o = new Some(1)
 console.log(o instanceof Rine)
