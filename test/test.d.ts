@@ -1,26 +1,17 @@
-import { RinePropertyContext } from '.';
-export declare const Some: (new (a: 1) => import("./TypeCheck").Checker<import("./Defines/define").RineAttribute, {
-    empty: {
-        get(ctx: RinePropertyContext): () => string;
-        call(ctx: any): () => number;
-    };
-    self: {
-        get(ctx: any): any;
-    };
-}, {
-    some: {
-        call(ctx: any): () => boolean;
-    };
-}, (a: 1) => void>) & ((a: 1) => import("./TypeCheck").Checker<import("./Defines/define").RineAttribute, {
-    empty: {
-        get(ctx: RinePropertyContext): () => string;
-        call(ctx: any): () => number;
-    };
-    self: {
-        get(ctx: any): any;
-    };
-}, {
-    some: {
-        call(ctx: any): () => boolean;
-    };
-}, (a: 1) => void>);
+import { Rine } from '.';
+declare function SomeDefs(): {
+    readonly some: () => false;
+    readonly empty: "asd" & (() => 123);
+    readonly self: any;
+} & Rine;
+export declare type SomeType = ReturnType<typeof SomeDefs>;
+export declare const Some: (new (a: 1) => {
+    readonly some: () => false;
+    readonly empty: "asd" & (() => 123);
+    readonly self: any;
+} & Rine) & ((a: 1) => {
+    readonly some: () => false;
+    readonly empty: "asd" & (() => 123);
+    readonly self: any;
+} & Rine);
+export {};

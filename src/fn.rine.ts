@@ -1,19 +1,15 @@
 import { Rine, RineConstructor } from './Rine'
-import { RineDefine, RineProperty, RineOperate, RineAttribute } from './Defines'
-import { Checker } from './TypeCheck'
+import { RProperty, ROperate, RAttribute, IDefine } from './Defines'
+import { RDefine } from './Defines/define'
+import { RineCheck } from './TypeCheck'
+import { ConstructorFn } from './types'
 import { keyCrossCheck } from './utils'
 import { makeProxy } from './Contexts/makeProxy'
 
 /** Auto make chain obj, with type
  * @param defs definition of chain object
  */
-export function rine<
-    A extends RineAttribute,
-    P extends RineProperty,
-    O extends RineOperate,
-    F extends Function,
-    >
-    (defs: RineDefine<A, P, O, F>): RineConstructor<Checker<A, P, O, F>, F> {
+export function rine(defs: IDefine): any {
     const { attr, props, opers, onConstruction } = defs
     keyCrossCheck(attr, props, opers)
 

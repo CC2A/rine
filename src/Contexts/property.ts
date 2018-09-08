@@ -1,10 +1,13 @@
-import { IRineConstructor, RineType } from '../Rine'
+import { IRineConstructor, RineType, Rine } from '../Rine'
 import { RineFn } from './RineFn'
+import { RineContext } from './ctx'
 
-//public 
-export interface RinePropertyContext {
-    self<T extends IRineConstructor<any>>(): RineType<T>;
+//#region public
+export interface RinePropertyContext extends RineContext {
+
 }
+//#endregion
+
 
 export class PropertyContext implements RinePropertyContext {
     self() {

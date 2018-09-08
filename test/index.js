@@ -7,4 +7,5 @@ __export(require("./types"));
 __export(require("./Rine"));
 __export(require("./utils"));
 __export(require("./fn.rine"));
+__export(require("./TypeCheck"));
 //# sourceMappingURL=index.js.map

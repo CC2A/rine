@@ -1,11 +1,11 @@
-import { rine, Rine, RineDefine, WithoutKey, RineType, RinePropertyContext } from '.'
+import { rine, Rine, getType, WithoutKey, RineType, RinePropertyContext } from '.'
+import { RineCheck, TRine } from './TypeCheck';
 console.log(rine)
 
-const Defs = {
+export const Some = rine({
     props: {
         empty: {
-            get(ctx: RinePropertyContext) {
-                let self = ctx.self<typeof Some>()
+            get(ctx) {
                 return () => 'asd'
             },
             call(ctx) {
@@ -13,8 +13,8 @@ const Defs = {
             }
         },
         self: {
-            get(ctx){
-                return null
+            get(ctx) {
+                return ctx.self()
             }
         }
     },
@@ -28,15 +28,14 @@ const Defs = {
     onConstruction(a: 1) {
 
     },
-}
-export const Some = rine(Defs)
+})
 
 let o = new Some(1)
-console.log(o instanceof Rine)
+// console.log(o instanceof Rine)
 
-const e = o.empty
-console.log(e)
+// const e = o.empty
+// console.log(e)
 
-const eo = e()
-console.log(eo)
-debugger
+// const eo = e()
+// console.log(eo)
+// debugger

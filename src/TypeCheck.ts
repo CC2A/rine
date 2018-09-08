@@ -1,8 +1,9 @@
 import { Rine } from './Rine'
-import { RineProperty, RineOperate, RineAttribute } from './Defines'
+import { RProperty, ROperate, RAttribute } from './Defines'
 import { IntersectionUniqueKey } from './types'
+import { RDefine } from './Defines/define';
 
-type CheckRineProperty<P extends RineProperty, R> =
+type CheckRineProperty<P extends RProperty, R> =
     {} extends P ?
     R :
     IntersectionUniqueKey<never, R,
@@ -13,7 +14,7 @@ type CheckRineProperty<P extends RineProperty, R> =
         ReturnType<ReturnType<P[K]['get']>> & ReturnType<P[K]['call']>
     }>
 
-type CheckRineOperate<O extends RineOperate, R> =
+type CheckRineOperate<O extends ROperate, R> =
     {} extends O ?
     R :
     IntersectionUniqueKey<never, R,
@@ -22,7 +23,7 @@ type CheckRineOperate<O extends RineOperate, R> =
         ReturnType<O[K]['call']>
     }>
 
-type CheckRineAttribute<A extends RineAttribute, R> =
+type CheckRineAttribute<A extends RAttribute, R> =
     {} extends A ?
     R :
     IntersectionUniqueKey<never, R,
@@ -31,9 +32,17 @@ type CheckRineAttribute<A extends RineAttribute, R> =
         ReturnType<A[K]['call']>
     }>
 
-export type Checker<
-    A extends RineAttribute,
-    P extends RineProperty,
-    O extends RineOperate,
+export type RineCheck<
+    A extends RAttribute,
+    P extends RProperty,
+    O extends ROperate,
+    > = never extends never ? CheckRineProperty<P, CheckRineOperate<O, CheckRineAttribute<A, {}>>> & Rine : never
+
+export type TRine<D extends RDefine<any, any, any, any>> = RineCheck<D['attr'], D['props'], D['opers']>
+
+export declare function getType<
+    A extends RAttribute,
+    P extends RProperty,
+    O extends ROperate,
     F extends Function,
-    > = CheckRineProperty<P, CheckRineOperate<O, CheckRineAttribute<A, {}>>> & Rine
+    >(defs: RDefine<A, P, O, F>): RineCheck<A, P, O>;

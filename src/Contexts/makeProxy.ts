@@ -1,12 +1,8 @@
-import { RineAttribute, RineProperty, RineOperate } from '../Defines'
+import { RAttribute, RProperty, ROperate } from '../Defines'
 import { RineFn } from './RineFn'
 import { RineFnProperty } from './property'
 
-export function makeProxy<T extends object,
-    A extends RineAttribute,
-    P extends RineProperty,
-    O extends RineOperate,>
-    (self: T, attr: A, props: P, opers: O): T {
+export function makeProxy(self: object, attr: RAttribute, props: RProperty, opers: ROperate): object {
     const fns = new Map<any, RineFn>()
     if (props != null) {
         for (const k in props) {

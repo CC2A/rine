@@ -4,3 +4,4 @@ export * from './utils';
 export * from './Defines';
 export * from './Contexts';
 export * from './fn.rine';
+export * from './TypeCheck';
